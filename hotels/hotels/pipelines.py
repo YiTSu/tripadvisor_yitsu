@@ -20,7 +20,7 @@ class HotelsPipeline(object):
     def process_item(self, item, spider):
         # print("进入了Pipeline！！！")
         if isinstance(item, CitysItem):
-            print("是CitysItem类型！！")
+            # print("是CitysItem类型！！")
             # with open("citysItem.txt", 'a') as fp:
             #     fp.write(item['name'].encode("utf8") + '\n')
             #     print("写入了name数据到citysItem.txt中！")
@@ -39,7 +39,7 @@ class HotelsPipeline(object):
             self.connect.commit()
             return item
         if isinstance(item, HotelsItem):
-            print("是HotelsItem类型！！")
+            # print("是HotelsItem类型！！")
             self.connect.ping(reconnect=True)
             self.cursor.execute(
                 'insert into hotels(city_code, id, name, name_en, price_low, price_site, rating, comments, rank, address, address_sim, photos, feature, star, room_num, award, intro_text, room_type, hotel_type, website, email)VALUES("{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}")'.format(
@@ -69,9 +69,10 @@ class HotelsPipeline(object):
 
         if isinstance(item, CommentsItem):
             print("是CommentsItem类型！！")
+            print(item)
             self.connect.ping(reconnect=True)
             self.cursor.execute(
-                'insert into comments(comment_id,comment_hotel_id,checkin_date,comment_date,comment_userid,comment_username,comment_userprov,comment_bethank_times,comment_title,comment_content,comment_response)VALUES("{}","{}","{}","{}","{}","{}",{}","{}","{}","{}","{}")'.format(
+                'insert into comments(comment_id,comment_hotel_id,checkin_date,comment_date,comment_userid,comment_username,comment_userprov,comment_bethank_times,comment_title,comment_content,comment_response)VALUES("{}","{}","{}","{}","{}","{}","{}","{}","{}","{}","{}")'.format(
                     item['commentId'],
                     item['commentHotelId'],
                     item['checkInDate'], item['commentDate'], item['commentUserId'], item['commentUserName'],
@@ -81,7 +82,7 @@ class HotelsPipeline(object):
             return item
 
         if isinstance(item, HotelsNearItem):
-            print("是HotelsNearItem类型！！")
+            # print("是HotelsNearItem类型！！")
             self.connect.ping(reconnect=True)
             self.cursor.execute(
                 'insert into hotels_near(hotel_id,name,distance)VALUES("{}","{}","{}")'.format(item['hotelId'],
@@ -90,7 +91,7 @@ class HotelsPipeline(object):
             self.connect.commit()
             return item
         if isinstance(item, RestaurantsNearItem):
-            print("是RestaurantsNearItem类型！！")
+            # print("是RestaurantsNearItem类型！！")
             self.connect.ping(reconnect=True)
             self.cursor.execute(
                 'insert into restaurants_near(hotel_id,name,distance)VALUES("{}","{}","{}")'.format(item['hotelId'],
@@ -99,7 +100,7 @@ class HotelsPipeline(object):
             self.connect.commit()
             return item
         if isinstance(item, AttractionsNearItem):
-            print("是AttractionsNearItem类型！！")
+            # print("是AttractionsNearItem类型！！")
             self.connect.ping(reconnect=True)
             self.cursor.execute(
                 'insert into attractions_near(hotel_id,name,distance)VALUES("{}","{}","{}")'.format(item['hotelId'],

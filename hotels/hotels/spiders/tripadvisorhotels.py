@@ -46,7 +46,7 @@ class TripadvisorhotelsSpider(scrapy.Spider):
             yield scrapy.Request(citysItem['href'], meta={'citysItemPass': citysItem}, callback=self.hotels_parse)
             # print("遍历city")
             # print(city.xpath('./h5/a/@title').extract())
-            print(citysItem['name'])
+            # print(citysItem['name'])
             # print(city.xpath('./@data-geoId').extract()[0])
             # print(citysItem['href'])
             yield citysItem
@@ -99,10 +99,10 @@ class TripadvisorhotelsSpider(scrapy.Spider):
             yield scrapy.Request(citysItem['href'], meta={'citysItemPass': citysItem}, callback=self.hotels_parse)
             # print("遍历city")
             # print(city.xpath('./h5/a/@title').extract())
-            print(citysItem['name'])
+            # print(citysItem['name'])
             # print(city.xpath('./@data-geoId').extract()[0])
             # print(citysItem['href'])
-            print(citysItem['hotelsCount'])
+            # print(citysItem['hotelsCount'])
             yield citysItem
         # print("End othercitys_parse!")
 
@@ -124,7 +124,7 @@ class TripadvisorhotelsSpider(scrapy.Spider):
             return None
 
     def hotels_parse(self, response):
-        print("Hello hotels_parse!")
+        # print("Hello hotels_parse!")
         hotelList = response.xpath(
             '//div[@class="ui_column is-8 main_col allowEllipsis "]/div[@class="prw_rup prw_meta_hsx_listing_name listing-title"]/div[@class="listing_title"]/a')
         # print(hotelList)
@@ -178,19 +178,19 @@ class TripadvisorhotelsSpider(scrapy.Spider):
             # print("爬虫结束")
             return None
 
-        print("End hotels_parse!")
+        # print("End hotels_parse!")
 
     def hotels_parse_details(self, response):
 
-        print("Hello hotels_parse_details!")
+        # print("Hello hotels_parse_details!")
         hotelsItemPass = response.meta['hotelsItemPass']
-        print("接收到了hotelsItemPass！")
+        # print("接收到了hotelsItemPass！")
         hotelsItem = HotelsItem()
         hotelsItem['id'] = hotelsItemPass['id']
-        print(hotelsItem['id'])
+        # print(hotelsItem['id'])
         hotelsItem['href'] = hotelsItemPass['href']
         hotelsItem['name'] = hotelsItemPass['name']
-        print(hotelsItem['name'])
+        # print(hotelsItem['name'])
         hotelsItem['cityHref'] = hotelsItemPass['cityHref']
         nameEn = response.xpath(
             '//div[@class="ui_column is-12-tablet is-10-mobile hotelDescription"]/h1/div/text()').extract()
@@ -199,28 +199,28 @@ class TripadvisorhotelsSpider(scrapy.Spider):
         else:
             hotelsItem['nameEn'] = ''
         # hotelsItem['nameEn'] = response.xpath('//div[@class="ui_column is-12-tablet is-10-mobile hotelDescription"]/h1/div/text()').extract()[0]
-        print(hotelsItem['nameEn'])
+        # print(hotelsItem['nameEn'])
         rating = response.xpath('//div[@class="prw_rup prw_common_bubble_rating rating"]/span/@alt').extract()
         if rating:
             hotelsItem['rating'] = rating[0]
         else:
             hotelsItem['rating'] = ''
         # hotelsItem['rating'] = response.xpath('//div[@class="prw_rup prw_common_bubble_rating rating"]/span/@alt').extract()[0]
-        print(hotelsItem['rating'])
+        # print(hotelsItem['rating'])
         comments = response.xpath('//span[@class="reviewCount "]/text()').extract()
         if comments:
             hotelsItem['comments'] = comments[0]
         else:
             hotelsItem['comments'] = ''
         # hotelsItem['comments'] = response.xpath('//span[@class="reviewCount "]/text()').extract()[0]
-        print(hotelsItem['comments'])
+        # print(hotelsItem['comments'])
         rank = response.xpath('//b[@class="rank"]/text()').extract()
         if rank:
             hotelsItem['rank'] = rank[0]
         else:
             hotelsItem['rank'] = ''
         # hotelsItem['rank'] = response.xpath('//b[@class="rank"]/text()').extract()[0]
-        print(hotelsItem['rank'])
+        # print(hotelsItem['rank'])
         address = response.xpath('//div[@class="hpCTAPlaceholder hidden"]/@data-address').extract()
         if address:
             hotelsItem['address'] = address[0]
@@ -235,7 +235,7 @@ class TripadvisorhotelsSpider(scrapy.Spider):
         else:
             hotelsItem['addressSim'] = ''
         # hotelsItem['addressSim'] = response.xpath('//div[@class="ui_column is-12-mobile is-6-tablet"]/div[@class="sub_content"]/div[@class="textitem"]/text()').extract()[1]
-        print(hotelsItem['addressSim'])
+        # print(hotelsItem['addressSim'])
         photos = response.xpath(
             '//div[@class="hotels-media-album-parts-PhotoCount__textWrapper--30uL8"]/span[@class="is-hidden-tablet hotels-media-album-parts-PhotoCount__text--3OXuH"]/text()').extract()
         if photos:
@@ -273,16 +273,16 @@ class TripadvisorhotelsSpider(scrapy.Spider):
         # hotelsItem['roomType'] = response.xpath('//div[@class="ui_column is-6-tablet is-hidden-mobile"]/div[@class="sub_content"]/div[@class="textitem"]/text()').extract()[0]
         hotelsItem['hotelType'] = response.xpath(
             '//div[@class="ui_column is-6-tablet is-hidden-mobile"]/div[@class="sub_content"]/div[@class="textitem style"]/text()').extract()
-        print(hotelsItem['hotelType'])
+        # print(hotelsItem['hotelType'])
         hotelsItem['website'] = response.xpath(
             '//div[@class="blRow is-hidden-mobile "]/div[@class="is-hidden-mobile blEntry website ui_link btfAbout "]/@data-ahref').extract()
         hotelsItem['email'] = response.xpath(
             '//div[@class="blRow is-hidden-mobile "]/div[@class="is-hidden-mobile blEntry email ui_link btfAbout"]/@data-olr').extract()
-        print(hotelsItem['email'])
+        # print(hotelsItem['email'])
         # 这是一个数组
         hotelsItem['feature'] = response.xpath(
             '//div[@class="sub_content ui_columns is-multiline is-gapless is-mobile"]/div[@class="entry ui_column is-4-tablet is-6-mobile is-4-desktop"]/div[@class="textitem"]/text()').extract()
-        print(hotelsItem['feature'])
+        # print(hotelsItem['feature'])
         hotelsItem['introText'] = response.xpath(
             '//div[@class="ui_column is-8-tablet is-3-desktop is-12-mobile rightSepDesktop"]/div[@class="prw_rup prw_common_responsive_collapsible_text"]/span/text()').extract()
 
@@ -294,7 +294,8 @@ class TripadvisorhotelsSpider(scrapy.Spider):
 
         if hotelsItem['href']:
             yield scrapy.Request(hotelsItem['href'], meta={'hotelsItemPass': hotelsItem},
-                                 callback=self.hotel_comments_parse)
+                                 callback=self.hotel_comments_parse, dont_filter=True)
+            print("调用了hotel_comments_parse")
         else:
             pass
 
@@ -308,7 +309,7 @@ class TripadvisorhotelsSpider(scrapy.Spider):
         else:
             pass
 
-        print("End hotels_parse_details!")
+        # print("End hotels_parse_details!")
 
     def hotel_comments_parse(self, response):
 
@@ -381,6 +382,7 @@ class TripadvisorhotelsSpider(scrapy.Spider):
             else:
                 commentsItem['commentResponse'] = ''
 
+            # print(commentsItem)
             yield commentsItem
 
         # 循环爬取网页
@@ -393,7 +395,10 @@ class TripadvisorhotelsSpider(scrapy.Spider):
                 # 爬取页数控制值自增
                 # 翻页请求
                 yield scrapy.Request(self.base_url + nextPage[0], meta={'hotelsItemPass': hotelsItemPass},
-                                     callback=self.hotel_comments_parse)
+                                     callback=self.hotel_comments_parse, dont_filter=True)
+                # print("进入了递归的hotel_comments_parse")
+                # print(self.base_url + nextPage[0])
+
         else:
             # 爬虫结束
             # print("爬虫结束")
@@ -403,7 +408,7 @@ class TripadvisorhotelsSpider(scrapy.Spider):
 
     def hotel_hotels_near_parse(self, response):
 
-        print("Hello hotel_hotels_near_parse")
+        # print("Hello hotel_hotels_near_parse")
 
         hotelsItemPass = response.meta['hotelsItemPass']
 
@@ -443,11 +448,11 @@ class TripadvisorhotelsSpider(scrapy.Spider):
             # print("爬虫结束")
             return None
 
-        print("End hotel_hotels_near_parse")
+        # print("End hotel_hotels_near_parse")
 
     def hotel_restaurants_near_parse(self, response):
 
-        print("Hello hotel_restaurants_near_parse")
+        # print("Hello hotel_restaurants_near_parse")
 
         hotelsItemPass = response.meta['hotelsItemPass']
 
@@ -487,11 +492,11 @@ class TripadvisorhotelsSpider(scrapy.Spider):
             # print("爬虫结束")
             return None
 
-        print("End hotel_restaurants_near_parse")
+        # print("End hotel_restaurants_near_parse")
 
     def hotel_attractions_near_parse(self, response):
 
-        print("Hello hotel_attractions_near_parse")
+        # print("Hello hotel_attractions_near_parse")
 
         hotelsItemPass = response.meta['hotelsItemPass']
 
@@ -532,4 +537,4 @@ class TripadvisorhotelsSpider(scrapy.Spider):
             # print("爬虫结束")
             return None
 
-        print("End hotel_attractions_near_parse")
+        # print("End hotel_attractions_near_parse")
