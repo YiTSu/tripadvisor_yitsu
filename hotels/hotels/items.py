@@ -39,11 +39,40 @@ class HotelsItem(scrapy.Item):
     restaurantsNear = scrapy.Field()
     attractionsNear = scrapy.Field()
 
+
 class CitysItem(scrapy.Item):
     name = scrapy.Field()
     href = scrapy.Field()
     hotelsCount = scrapy.Field()
 
-class CommentsItem(scrapy.Item):
-    hotelId = scrapy.Field()
 
+class CommentsItem(scrapy.Item):
+    commentId = scrapy.Field()
+    commentHotelId = scrapy.Field()
+    checkInDate = scrapy.Field()
+    commentDate = scrapy.Field()
+    commentUserId = scrapy.Field()
+    commentUserName = scrapy.Field()
+    commentUserProvin = scrapy.Field()
+    commentBeThankTimes = scrapy.Field()
+    commentTitle = scrapy.Field()
+    commentContent = scrapy.Field()
+    commentResponse = scrapy.Field()
+
+
+class HotelsNearItem(scrapy.Item):
+    hotelId = scrapy.Field()
+    name = scrapy.Field()
+    distance = scrapy.Field()
+
+
+class RestaurantsNearItem(scrapy.Item):
+    hotelId = scrapy.Field()
+    name = scrapy.Field()
+    distance = scrapy.Field()
+
+
+class AttractionsNearItem(scrapy.Item):
+    hotelId = scrapy.Field()
+    name = scrapy.Field()
+    distance = scrapy.Field()

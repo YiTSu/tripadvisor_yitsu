@@ -118,8 +118,6 @@ class MyUserAgentMiddleware(UserAgentMiddleware):
         agent = random.choice(self.user_agent)
         request.headers['User-Agent'] = agent
 
-
-
 # class ProxyMiddleware(object):
 #
 #     def __init__(self, ip):
@@ -131,4 +129,3 @@ class MyUserAgentMiddleware(UserAgentMiddleware):
 #     def process_request(self, request, spider):
 #         ip = random.choice(self.ip)
 #         request.meta['proxy'] = ip
-

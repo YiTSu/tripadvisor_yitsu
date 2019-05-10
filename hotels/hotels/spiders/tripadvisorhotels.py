@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 import scrapy
 
-from hotels.items import CitysItem, HotelsItem, CommentsItem
+from hotels.items import CitysItem, HotelsItem, CommentsItem, RestaurantsNearItem, AttractionsNearItem, \
+    HotelsNearItem
 
 
 class TripadvisorhotelsSpider(scrapy.Spider):
@@ -10,7 +11,7 @@ class TripadvisorhotelsSpider(scrapy.Spider):
     # 允许爬取的域名
     # allowed_domains = ['tripadvisor.com']
     # 爬虫入口爬取地址
-    start_urls = ['http://www.meijutt.com/new100.html']
+    # start_urls = ['http://www.meijutt.com/new100.html']
     # start_urls = ['https//www.baidu.com/']
     base_url = 'https://www.tripadvisor.cn'
     start_urls = ['https://www.tripadvisor.cn/Hotels-g294211-China-Hotels.html']
@@ -52,7 +53,8 @@ class TripadvisorhotelsSpider(scrapy.Spider):
         print("End parse!")
 
         # 循环爬取翻页
-        nextPage = response.xpath('//div[@class="unified ui_pagination leaf_geo_pagination"]/a[text()="下一页"]/@href').extract()[0]
+        nextPage = \
+        response.xpath('//div[@class="unified ui_pagination leaf_geo_pagination"]/a[text()="下一页"]/@href').extract()[0]
         # print(nextPage)
         # 爬取页数控制及末页控制
         if self.count < self.page_end and nextPage != 'javascript:;':
@@ -88,7 +90,7 @@ class TripadvisorhotelsSpider(scrapy.Spider):
             else:
                 citysItem['href'] = ''
 
-            hotelsCount =  city.xpath('./div[@class ="info"]/span[@class="name"]/span[@class="count"]/text()').extract()
+            hotelsCount = city.xpath('./div[@class ="info"]/span[@class="name"]/span[@class="count"]/text()').extract()
             if hotelsCount:
                 citysItem['hotelsCount'] = hotelsCount[0]
             else:
@@ -105,7 +107,8 @@ class TripadvisorhotelsSpider(scrapy.Spider):
         # print("End othercitys_parse!")
 
         # 循环爬取翻页
-        nextPage = response.xpath('//div[@class="unified ui_pagination leaf_geo_pagination"]/a[text()="下一页"]/@href').extract()[0]
+        nextPage = \
+        response.xpath('//div[@class="unified ui_pagination leaf_geo_pagination"]/a[text()="下一页"]/@href').extract()[0]
         # print(nextPage)
         # 爬取页数控制及末页控制
         if self.count < self.page_end and nextPage != 'javascript:;':
@@ -120,10 +123,10 @@ class TripadvisorhotelsSpider(scrapy.Spider):
             # print("爬虫结束")
             return None
 
-
-    def hotels_parse(self,response):
+    def hotels_parse(self, response):
         print("Hello hotels_parse!")
-        hotelList = response.xpath('//div[@class="ui_column is-8 main_col allowEllipsis "]/div[@class="prw_rup prw_meta_hsx_listing_name listing-title"]/div[@class="listing_title"]/a')
+        hotelList = response.xpath(
+            '//div[@class="ui_column is-8 main_col allowEllipsis "]/div[@class="prw_rup prw_meta_hsx_listing_name listing-title"]/div[@class="listing_title"]/a')
         # print(hotelList)
         citysItemPass = response.meta['citysItemPass']
         for hotel in hotelList:
@@ -148,7 +151,8 @@ class TripadvisorhotelsSpider(scrapy.Spider):
                 hotelsItem['name'] = ''
             # hotelsItem['name'] = hotel.xpath('./text()').extract()[0]
             hotelsItem['cityHref'] = citysItemPass['href']
-            yield scrapy.Request(hotelsItem['href'], meta={'hotelsItemPass': hotelsItem}, callback=self.hotels_parse_details)
+            yield scrapy.Request(hotelsItem['href'], meta={'hotelsItemPass': hotelsItem},
+                                 callback=self.hotels_parse_details)
 
             # print(hotelsItem['id'])
             # print(hotelsItem['href'])
@@ -156,23 +160,25 @@ class TripadvisorhotelsSpider(scrapy.Spider):
             # print(hotelsItem['city'])
             # print("退出了hotels_parse的for循环！")
 
-        print("End hotels_parse!")
-
         # 循环爬取网页
-        nextPage = response.xpath('//div[@class="unified ui_pagination standard_pagination ui_section listFooter"]/a[text()="下一页"]/@href').extract()[0]
+        nextPage = response.xpath(
+            '//div[@class="unified ui_pagination standard_pagination ui_section listFooter"]/a[text()="下一页"]/@href').extract()
         # print(nextPage)
         # 爬取页数控制及末页控制
-        if self.count < self.page_end and nextPage != 'javascript:;':
+        if nextPage:
             if nextPage is not None:
                 # 爬取页数控制值自增
-                self.count = self.count + 1
+                # self.count = self.count + 1
                 # print("count++!!!")
                 # 翻页请求
-                yield scrapy.Request(self.base_url + nextPage, callback=self.hotels_parse)
+                yield scrapy.Request(self.base_url + nextPage[0], meta={'citysItemPass': citysItemPass},
+                                     callback=self.hotels_parse)
         else:
             # 爬虫结束
             # print("爬虫结束")
             return None
+
+        print("End hotels_parse!")
 
     def hotels_parse_details(self, response):
 
@@ -186,7 +192,8 @@ class TripadvisorhotelsSpider(scrapy.Spider):
         hotelsItem['name'] = hotelsItemPass['name']
         print(hotelsItem['name'])
         hotelsItem['cityHref'] = hotelsItemPass['cityHref']
-        nameEn = response.xpath('//div[@class="ui_column is-12-tablet is-10-mobile hotelDescription"]/h1/div/text()').extract()
+        nameEn = response.xpath(
+            '//div[@class="ui_column is-12-tablet is-10-mobile hotelDescription"]/h1/div/text()').extract()
         if nameEn:
             hotelsItem['nameEn'] = nameEn[0]
         else:
@@ -220,72 +227,309 @@ class TripadvisorhotelsSpider(scrapy.Spider):
         else:
             hotelsItem['address'] = ''
         # hotelsItem['address'] = response.xpath('//div[@class="hpCTAPlaceholder hidden"]/@data-address').extract()[0]
-        addressSim = response.xpath('//div[@class="ui_column is-12-mobile is-6-tablet"]/div[@class="sub_content"]/div[@class="textitem"]/text()').extract()
+        addressSim = response.xpath(
+            '//div[@class="ui_column is-12-mobile is-6-tablet"]/div[@class="sub_content"]/div[@class="textitem"]/text()').extract()
         if addressSim:
-            hotelsItem['addressSim'] = addressSim[1]
+            hotelsItem['addressSim'] = ''
+            # hotelsItem['addressSim'] = addressSim[1]
         else:
             hotelsItem['addressSim'] = ''
         # hotelsItem['addressSim'] = response.xpath('//div[@class="ui_column is-12-mobile is-6-tablet"]/div[@class="sub_content"]/div[@class="textitem"]/text()').extract()[1]
         print(hotelsItem['addressSim'])
-        photos = response.xpath('//div[@class="hotels-media-album-parts-PhotoCount__textWrapper--30uL8"]/span[@class="is-hidden-tablet hotels-media-album-parts-PhotoCount__text--3OXuH"]/text()').extract()
+        photos = response.xpath(
+            '//div[@class="hotels-media-album-parts-PhotoCount__textWrapper--30uL8"]/span[@class="is-hidden-tablet hotels-media-album-parts-PhotoCount__text--3OXuH"]/text()').extract()
         if photos:
             hotelsItem['photos'] = photos[0]
         else:
             hotelsItem['photos'] = ''
         # hotelsItem['photos'] = response.xpath('//div[@class="hotels-media-album-parts-PhotoCount__textWrapper--30uL8"]/span[@class="is-hidden-tablet hotels-media-album-parts-PhotoCount__text--3OXuH"]/text()').extract()[0]
-        star = response.xpath('//div[@class="hotels-hotel-review-overview-HighlightedAmenities__amenityItem--3E_Yg"]/div/text()').extract()
+        star = response.xpath(
+            '//div[@class="hotels-hotel-review-overview-HighlightedAmenities__amenityItem--3E_Yg"]/div/text()').extract()
         if star:
             hotelsItem['star'] = star[0]
         else:
             hotelsItem['star'] = ''
         # hotelsItem['star'] = response.xpath('//div[@class="hotels-hotel-review-overview-HighlightedAmenities__amenityItem--3E_Yg"]/div/text()').extract()[0]
-        roomNum = response.xpath('//div[@class="ui_column is-12-mobile is-6-tablet"]/div[@class="sub_content"]/div[@class="textitem"]/text()').extract()
+        roomNum = response.xpath(
+            '//div[@class="ui_column is-12-mobile is-6-tablet"]/div[@class="sub_content"]/div[@class="textitem"]/text()').extract()
         if roomNum:
             hotelsItem['roomNum'] = roomNum[0]
         else:
             hotelsItem['roomNum'] = ''
         # hotelsItem['roomNum'] = response.xpath('//div[@class="ui_column is-12-mobile is-6-tablet"]/div[@class="sub_content"]/div[@class="textitem"]/text()').extract()[0]
-        award = response.xpath('//div[@class="ui_column is-3 is-shown-at-desktop"]/div[@class="section_content"]/div[@class="sub_content"]/div[@class="prw_rup prw_common_location_badges"]/div[@class="sub_content badges is-shown-at-desktop"]/div[@class="badgeWrapper"]/span[@class="award award-coe"]/span[@class="ui_icon certificate-of-excellence"]/text()').extract()
+        award = response.xpath(
+            '//div[@class="ui_column is-3 is-shown-at-desktop"]/div[@class="section_content"]/div[@class="sub_content"]/div[@class="prw_rup prw_common_location_badges"]/div[@class="sub_content badges is-shown-at-desktop"]/div[@class="badgeWrapper"]/span[@class="award award-coe"]/span[@class="ui_icon certificate-of-excellence"]/text()').extract()
         if award:
             hotelsItem['award'] = award[0]
         else:
             hotelsItem['award'] = ''
         # hotelsItem['award'] = response.xpath('//div[@class="ui_column is-3 is-shown-at-desktop"]/div[@class="section_content"]/div[@class="sub_content"]/div[@class="prw_rup prw_common_location_badges"]/div[@class="sub_content badges is-shown-at-desktop"]/div[@class="badgeWrapper"]/span[@class="award award-coe"]/span[@class="ui_icon certificate-of-excellence"]/text()').extract()[0]
-        roomType = response.xpath('//div[@class="ui_column is-6-tablet is-hidden-mobile"]/div[@class="sub_content"]/div[@class="textitem"]/text()').extract()
+        roomType = response.xpath(
+            '//div[@class="ui_column is-6-tablet is-hidden-mobile"]/div[@class="sub_content"]/div[@class="textitem"]/text()').extract()
         if roomType:
             hotelsItem['roomType'] = roomType[0]
         else:
             hotelsItem['roomType'] = ''
         # hotelsItem['roomType'] = response.xpath('//div[@class="ui_column is-6-tablet is-hidden-mobile"]/div[@class="sub_content"]/div[@class="textitem"]/text()').extract()[0]
-        hotelsItem['hotelType'] = response.xpath('//div[@class="ui_column is-6-tablet is-hidden-mobile"]/div[@class="sub_content"]/div[@class="textitem style"]/text()').extract()
+        hotelsItem['hotelType'] = response.xpath(
+            '//div[@class="ui_column is-6-tablet is-hidden-mobile"]/div[@class="sub_content"]/div[@class="textitem style"]/text()').extract()
         print(hotelsItem['hotelType'])
-        hotelsItem['website'] = response.xpath('//div[@class="blRow is-hidden-mobile "]/div[@class="is-hidden-mobile blEntry website ui_link btfAbout "]/@data-ahref').extract()
-        hotelsItem['email'] = response.xpath('//div[@class="blRow is-hidden-mobile "]/div[@class="is-hidden-mobile blEntry email ui_link btfAbout"]/@data-olr').extract()
+        hotelsItem['website'] = response.xpath(
+            '//div[@class="blRow is-hidden-mobile "]/div[@class="is-hidden-mobile blEntry website ui_link btfAbout "]/@data-ahref').extract()
+        hotelsItem['email'] = response.xpath(
+            '//div[@class="blRow is-hidden-mobile "]/div[@class="is-hidden-mobile blEntry email ui_link btfAbout"]/@data-olr').extract()
         print(hotelsItem['email'])
         # 这是一个数组
         hotelsItem['feature'] = response.xpath(
             '//div[@class="sub_content ui_columns is-multiline is-gapless is-mobile"]/div[@class="entry ui_column is-4-tablet is-6-mobile is-4-desktop"]/div[@class="textitem"]/text()').extract()
         print(hotelsItem['feature'])
-        hotelsItem['introText'] = response.xpath('//div[@class="ui_column is-8-tablet is-3-desktop is-12-mobile rightSepDesktop"]/div[@class="prw_rup prw_common_responsive_collapsible_text"]/span/text()').extract()
-        print("End hotels_parse_details!")
-        nears = response.xpath('//div[@class="grids is-shown-at-tablet"]/div[@class="prw_rup prw_common_btf_nearby_poi_grid grid-widget"]/a/@href').extract()
-        if nears:
-            hotelsItem['hotelsNear'] = nears[0]
-            hotelsItem['restaurantsNear'] = nears[1]
-            hotelsItem['attractionsNear'] = nears[2]
-        else:
-            hotelsItem['hotelsNear'] = ''
-            hotelsItem['restaurantsNear'] = ''
-            hotelsItem['attractionsNear'] = ''
+        hotelsItem['introText'] = response.xpath(
+            '//div[@class="ui_column is-8-tablet is-3-desktop is-12-mobile rightSepDesktop"]/div[@class="prw_rup prw_common_responsive_collapsible_text"]/span/text()').extract()
 
-        yield scrapy.Request(hotelsItem['href'], meta={'hotelsItemPass': hotelsItem}, callback=self.hotel_comments_parse)
+        # 附近的酒店、餐厅和景点
+        nears = response.xpath(
+            '//div[@class="grids is-shown-at-tablet"]/div[@class="prw_rup prw_common_btf_nearby_poi_grid grid-widget"]/a/@href').extract()
 
         yield hotelsItem
 
-    def hotel_comments_parse(self,response):
-        commentsItem = CommentsItem()
+        if hotelsItem['href']:
+            yield scrapy.Request(hotelsItem['href'], meta={'hotelsItemPass': hotelsItem},
+                                 callback=self.hotel_comments_parse)
+        else:
+            pass
+
+        if nears:
+            yield scrapy.Request(self.base_url + nears[0], meta={'hotelsItemPass': hotelsItem},
+                                 callback=self.hotel_hotels_near_parse)
+            yield scrapy.Request(self.base_url + nears[1], meta={'hotelsItemPass': hotelsItem},
+                                 callback=self.hotel_restaurants_near_parse)
+            yield scrapy.Request(self.base_url + nears[2], meta={'hotelsItemPass': hotelsItem},
+                                 callback=self.hotel_attractions_near_parse)
+        else:
+            pass
+
+        print("End hotels_parse_details!")
+
+    def hotel_comments_parse(self, response):
+
+        print("Hello hotel_comments_parse")
+
         hotelsItemPass = response.meta['hotelsItemPass']
-        commentsItem['hotelId'] = hotelsItemPass['id']
+        commentList = response.xpath(
+            '//div[@class="listContainer hide-more-mobile"]/div/div[@class="review-container"]')
+        for comment in commentList:
+            commentsItem = CommentsItem()
+            commentsItem['commentHotelId'] = hotelsItemPass['id']
+            commentId = comment.xpath(
+                './div[@class="prw_rup prw_reviews_review_resp"]/div[@class="reviewSelector"]/@id').extract()
+            if commentId:
+                commentsItem['commentId'] = commentId[0]
+            else:
+                commentsItem['commentId'] = ''
+            commentUserId = comment.xpath(
+                './div[@class="prw_rup prw_reviews_review_resp"]/div[@class="reviewSelector"]/div[@class="rev_wrap ui_columns is-multiline "]/div[@class="ui_column is-2"]/div[@class="prw_rup prw_reviews_member_info_resp"]/div[@class="member_info"]/div[@class="memberOverlayLink clickable"]/@id').extract()
+            if commentUserId:
+                commentsItem['commentUserId'] = commentUserId[0]
+            else:
+                commentsItem['commentUserId'] = ''
+            commentUserName = comment.xpath(
+                './div[@class="prw_rup prw_reviews_review_resp"]/div[@class="reviewSelector"]/div[@class="rev_wrap ui_columns is-multiline "]/div[@class="ui_column is-2"]/div[@class="prw_rup prw_reviews_member_info_resp"]/div[@class="member_info"]/div[@class="memberOverlayLink clickable"]/div[@class="info_text"]/div/text()').extract()
+            if commentUserName:
+                commentsItem['commentUserName'] = commentUserName[0]
+            else:
+                commentsItem['commentUserName'] = ''
+            commentUserProvin = comment.xpath(
+                './div[@class="prw_rup prw_reviews_review_resp"]/div[@class="reviewSelector"]/div[@class="rev_wrap ui_columns is-multiline "]/div[@class="ui_column is-2"]/div[@class="prw_rup prw_reviews_member_info_resp"]/div[@class="member_info"]/div[@class="memberOverlayLink clickable"]/div[@class="info_text"]/div[@class="userLoc"]/strong/text()').extract()
+            if commentUserProvin:
+                commentsItem['commentUserProvin'] = commentUserProvin[0]
+            else:
+                commentsItem['commentUserProvin'] = ''
+            checkInDate = comment.xpath(
+                './div[@class="prw_rup prw_reviews_review_resp"]/div[@class="reviewSelector"]/div[@class="rev_wrap ui_columns is-multiline "]/div[@class="ui_column is-9"]/div[@class="prw_rup prw_reviews_stay_date_hsx"]/text()').extract()
+            if checkInDate:
+                commentsItem['checkInDate'] = checkInDate[0]
+            else:
+                commentsItem['checkInDate'] = ''
+            commentDate = comment.xpath(
+                './div[@class="prw_rup prw_reviews_review_resp"]/div[@class="reviewSelector"]/div[@class="rev_wrap ui_columns is-multiline "]/div[@class="ui_column is-9"]/span[@class="ratingDate"]/@title').extract()
+            if commentDate:
+                commentsItem['commentDate'] = commentDate[0]
+            else:
+                commentsItem['commentDate'] = ''
+            commentBeThanksTimes = comment.xpath(
+                './div[@class="prw_rup prw_reviews_review_resp"]/div[@class="reviewSelector"]/div[@class="rev_wrap ui_columns is-multiline "]/div[@class="ui_column is-9"]/div[@class="prw_rup prw_reviews_vote_line_hsx"]/div[@class="helpful redesigned hsx_helpful"]/span[@class="thankButton hsx_thank_button"]/span[@class="helpful_text"]/span[@class="numHelp emphasizeWithColor"]/text()').extract()
+            if commentBeThanksTimes:
+                commentsItem['commentBeThankTimes'] = commentBeThanksTimes[0]
+            else:
+                commentsItem['commentBeThankTimes'] = ''
+            commentTitle = comment.xpath(
+                './div[@class="prw_rup prw_reviews_review_resp"]/div[@class="reviewSelector"]/div[@class="rev_wrap ui_columns is-multiline "]/div[@class="ui_column is-9"]/div[@class="quote"]/a[@class="title "]/span/text()').extract()
+            if commentTitle:
+                commentsItem['commentTitle'] = commentTitle[0]
+            else:
+                commentsItem['commentTitle'] = ''
+            commentContent = comment.xpath(
+                './div[@class="prw_rup prw_reviews_review_resp"]/div[@class="reviewSelector"]/div[@class="rev_wrap ui_columns is-multiline "]/div[@class="ui_column is-9"]/div[@class="prw_rup prw_reviews_text_summary_hsx"]/div[@class="entry"]/p/text()').extract()
+            if commentContent:
+                commentsItem['commentContent'] = commentContent[0]
+            else:
+                commentsItem['commentContent'] = ''
+            commentResponse = comment.xpath(
+                './div[@class="prw_rup prw_reviews_review_resp"]/div[@class="reviewSelector"]/div[@class="rev_wrap ui_columns is-multiline "]/div[@class="ui_column is-9"]/div[@class="mgrRspnInline"]/div[@class="prw_rup prw_reviews_text_summary_hsx"]/div[@class="entry"]/p[@class="partial_entry"]/text()').extract()
+            if commentResponse:
+                commentsItem['commentResponse'] = commentResponse[0]
+            else:
+                commentsItem['commentResponse'] = ''
 
+            yield commentsItem
 
+        # 循环爬取网页
+        nextPage = response.xpath(
+            '//div[@class="prw_rup prw_common_responsive_pagination"]/div[@class="unified ui_pagination "]/a[text()="下一页"]/@href').extract()
+        # print(nextPage)
+        # 爬取页数控制及末页控制
+        if nextPage:
+            if nextPage is not None:
+                # 爬取页数控制值自增
+                # 翻页请求
+                yield scrapy.Request(self.base_url + nextPage[0], meta={'hotelsItemPass': hotelsItemPass},
+                                     callback=self.hotel_comments_parse)
+        else:
+            # 爬虫结束
+            # print("爬虫结束")
+            return None
 
+        print("End hotel_comments_parse")
+
+    def hotel_hotels_near_parse(self, response):
+
+        print("Hello hotel_hotels_near_parse")
+
+        hotelsItemPass = response.meta['hotelsItemPass']
+
+        hotelsNearList = response.xpath('//div[@class="ui_column is-8 main_col allowEllipsis "]')
+
+        for hotel in hotelsNearList:
+            hotelsNearItem = HotelsNearItem()
+            hotelsNearItem['hotelId'] = hotelsItemPass['id']
+            name = hotel.xpath(
+                './div[@class="prw_rup prw_meta_hsx_listing_name listing-title"]/div[@class="listing_title"]/a/text()').extract()
+            if name:
+                hotelsNearItem['name'] = name[0]
+            else:
+                hotelsNearItem['name'] = ''
+            distance = hotel.xpath(
+                './div[@class="main-cols"]/div[@class="info-col"]/div[@class="distance linespace is-shown-at-mobile"]/div[@class="distWrapper"]/b/text()').extract()
+            if distance:
+                hotelsNearItem['distance'] = distance[0]
+            else:
+                hotelsNearItem['distance'] = ''
+
+            yield hotelsNearItem
+
+        # 循环爬取网页
+        nextPage = response.xpath(
+            '//div[@class="unified ui_pagination standard_pagination ui_section listFooter"]/a[text()="下一页"]/@href').extract()
+        # print(nextPage)
+        # 爬取页数控制及末页控制
+        if nextPage:
+            if nextPage is not None:
+                # 爬取页数控制值自增
+                # 翻页请求
+                yield scrapy.Request(self.base_url + nextPage[0], meta={'hotelsItemPass': hotelsItemPass},
+                                     callback=self.hotel_hotels_near_parse)
+        else:
+            # 爬虫结束
+            # print("爬虫结束")
+            return None
+
+        print("End hotel_hotels_near_parse")
+
+    def hotel_restaurants_near_parse(self, response):
+
+        print("Hello hotel_restaurants_near_parse")
+
+        hotelsItemPass = response.meta['hotelsItemPass']
+
+        restaruantsNearList = response.xpath(
+            '//div[@class="ppr_rup ppr_priv_restaurants_near_list"]/div[@class="near_listing"]')
+
+        for restaurant in restaruantsNearList:
+            restaruantsNearItem = RestaurantsNearItem()
+            restaruantsNearItem['hotelId'] = hotelsItemPass['id']
+            name = restaurant.xpath('./div[@class="location_name"]/a/text()').extract()
+            if name:
+                restaruantsNearItem['name'] = name[0]
+            else:
+                restaruantsNearItem['name'] = ''
+            distance = restaurant.xpath(
+                './div[@class="entry wrap"]/div[@class="description"]/div/div[@class="distance"]/b/text()').extract()
+            if distance:
+                restaruantsNearItem['distance'] = distance[0]
+            else:
+                restaruantsNearItem['distance'] = ''
+
+            yield restaruantsNearItem
+
+        # 循环爬取网页
+        nextPage = response.xpath(
+            '//div[@class="pagination"]/div[@class="pgLinks"]/a[@class="guiArw sprite-pageNext false"]/@href').extract()
+        # print(nextPage)
+        # 爬取页数控制及末页控制
+        if nextPage:
+            if nextPage is not None:
+                # 爬取页数控制值自增
+                # 翻页请求
+                yield scrapy.Request(self.base_url + nextPage[0], meta={'hotelsItemPass': hotelsItemPass},
+                                     callback=self.hotel_restaurants_near_parse)
+        else:
+            # 爬虫结束
+            # print("爬虫结束")
+            return None
+
+        print("End hotel_restaurants_near_parse")
+
+    def hotel_attractions_near_parse(self, response):
+
+        print("Hello hotel_attractions_near_parse")
+
+        hotelsItemPass = response.meta['hotelsItemPass']
+
+        attractionsNearList = response.xpath(
+            '//div[@class="ppr_rup ppr_priv_attractions_near_list"]/div[@class="near_listing_2017"]/div[@class="near_listing_content"]')
+
+        for attraction in attractionsNearList:
+            attractionsNearItem = AttractionsNearItem()
+            attractionsNearItem['hotelId'] = hotelsItemPass['id']
+            name = attraction.xpath('./div[@class="location_name"]/a/text()').extract()
+            if name:
+                attractionsNearItem['name'] = name[0]
+            else:
+                attractionsNearItem['name'] = ''
+
+            distance = attraction.xpath(
+                './div[@class="entry wrap"]/div[@class="description"]/div/div[@class="distance"]/b/text()').extract()
+            if distance:
+                attractionsNearItem['distance'] = distance[0]
+            else:
+                attractionsNearItem['distance'] = ''
+
+            yield attractionsNearItem
+
+        # 循环爬取网页
+        nextPage = response.xpath(
+            '//div[@class="pagination"]/div[@class="pgLinks"]/a[@class="guiArw sprite-pageNext false"]/@href').extract()
+        # print(nextPage)
+        # 爬取页数控制及末页控制
+        if nextPage:
+            if nextPage is not None:
+                # 爬取页数控制值自增
+                # 翻页请求
+                yield scrapy.Request(self.base_url + nextPage[0], meta={'hotelsItemPass': hotelsItemPass},
+                                     callback=self.hotel_attractions_near_parse)
+        else:
+            # 爬虫结束
+            # print("爬虫结束")
+            return None
+
+        print("End hotel_attractions_near_parse")
